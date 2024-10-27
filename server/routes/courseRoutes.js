@@ -35,25 +35,36 @@ router.post('/create', upload.fields([{ name: 'coverImage' }, { name: 'salesVide
   }
 });
 
-// Route to map chapters and topics to a course
 router.post('/:courseId/add-content', async (req, res) => {
   const { courseId } = req.params;
   const { chapters } = req.body;
 
+  // Log incoming courseId and chapters data
+  console.log('Received courseId:', courseId);
+  console.log('Received chapters:', chapters);
+
   // Validate courseId format
   if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    console.log('Invalid courseId format');
     return res.status(400).json({ message: "Invalid courseId format." });
   }
 
   try {
+    // Attempt to find the course
     const course = await Course.findById(courseId);
+    console.log('Fetched course:', course);
+
     if (!course) {
+      console.log('Course not found');
       return res.status(404).json({ message: 'Course not found' });
     }
 
     // Append chapters to the course
     course.chapters.push(...chapters);
+    console.log('Updated course chapters:', course.chapters);
+
     await course.save();
+    console.log('Course content saved successfully');
 
     res.json({ message: 'Course content saved successfully!' });
   } catch (error) {
@@ -61,4 +72,5 @@ router.post('/:courseId/add-content', async (req, res) => {
     res.status(500).json({ message: 'Failed to save course content.' });
   }
 });
+
 module.exports = router;
